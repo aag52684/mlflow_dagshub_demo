@@ -37,3 +37,28 @@ Example endpoint:
 
 ## Sample Result
 The deployed model was validated successfully and returned predictions through the inference API.
+
+## Run Steps
+
+### Docker
+1. Build the image
+`docker build -t first-experiment-model .`
+
+2. Run the container
+`docker run -p 5001:8080 --name first-experiment-container first-experiment-model`
+
+3. Test the endpoint
+`curl -X POST http://127.0.0.1:5001/invocations -H "Content-Type: application/json" -d "{\"inputs\": [[0.1276369210104354,0.5388543360516529,-0.677549384520644,-0.5306479123499234,0.2697207514136527,0.286215260265736,0.24551629442856485,-0.17119612639661974,-1.0487003944182158,0.19594920307479496]]}"`
+
+### Kubernetes
+1. Apply deployment
+`kubectl apply -f k8s/deployment.yaml`
+
+2. Apply service
+`kubectl apply -f k8s/service.yaml`
+
+3. Port-forward the service
+`kubectl port-forward service/first-experiment-service 5002:80`
+
+4. Test the endpoint
+`curl -X POST http://127.0.0.1:5002/invocations -H "Content-Type: application/json" -d "{\"inputs\": [[0.1276369210104354,0.5388543360516529,-0.677549384520644,-0.5306479123499234,0.2697207514136527,0.286215260265736,0.24551629442856485,-0.17119612639661974,-1.0487003944182158,0.19594920307479496]]}"`
