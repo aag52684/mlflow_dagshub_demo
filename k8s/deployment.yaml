@@ -1,0 +1,33 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: first-experiment-model
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: first-experiment-model
+  template:
+    metadata:
+      labels:
+        app: first-experiment-model
+    spec:
+      containers:
+        - name: first-experiment-model
+          image: first-experiment-model:latest
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 8080
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: first-experiment-service
+spec:
+  selector:
+    app: first-experiment-model
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 8080
+  type: NodePort
