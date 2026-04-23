@@ -38,6 +38,9 @@ Example endpoint:
 ## Sample Result
 The deployed model was validated successfully and returned predictions through the inference API.
 
+
+
+
 ## Run Steps
 
 ### Docker
@@ -62,3 +65,9 @@ The deployed model was validated successfully and returned predictions through t
 
 4. Test the endpoint
 `curl -X POST http://127.0.0.1:5002/invocations -H "Content-Type: application/json" -d "{\"inputs\": [[0.1276369210104354,0.5388543360516529,-0.677549384520644,-0.5306479123499234,0.2697207514136527,0.286215260265736,0.24551629442856485,-0.17119612639661974,-1.0487003944182158,0.19594920307479496]]}"`
+
+## Databricks MLflow Validation
+- Created a Databricks notebook for MLflow validation
+- Attached serverless compute and verified notebook execution
+- Created an MLflow experiment and logged multiple runs
+- Validated run tracking and comparison flow in Databricks
