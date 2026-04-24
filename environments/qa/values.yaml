@@ -1,0 +1,6 @@
+replicaCount: 1
+environment: qa
+image:
+  tag: qa
+service:
+  port: 80
