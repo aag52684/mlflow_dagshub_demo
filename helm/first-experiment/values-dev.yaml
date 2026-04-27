@@ -1,0 +1,10 @@
+replicaCount: 1
+environment: dev
+image:
+  repository: first-experiment-model
+  tag: dev
+  pullPolicy: IfNotPresent
+service:
+  type: ClusterIP
+  port: 80
+  targetPort: 8080
