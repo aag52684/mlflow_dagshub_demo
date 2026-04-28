@@ -5,7 +5,7 @@ on:
     branches:
       - main
     paths:
-      - 'deployment/triggers/dev-trigger.txt'
+      #- 'deployment/triggers/dev-trigger.txt'
       - 'deployment/versions/dev-version.txt'
       - 'helm/**'
       - '.github/workflows/dev-cicd.yaml'
@@ -32,6 +32,9 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+
+      - name: Show dev version
+        run: cat deployment/versions/dev-version.txt
 
       - name: Dev deployment stage placeholder
         run: echo "Dev deployment will be connected after trigger-based flow is validated"
