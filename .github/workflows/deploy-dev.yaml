@@ -9,7 +9,6 @@ on:
 jobs:
   validate-dev-helm:
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -19,3 +18,27 @@ jobs:
 
       - name: Validate Helm chart with dev values
         run: helm template first-experiment ./helm/first-experiment -f ./helm/first-experiment/values-dev.yaml
+
+  validate-qa-helm:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Helm
+        uses: azure/setup-helm@v4
+
+      - name: Validate Helm chart with qa values
+        run: helm template first-experiment ./helm/first-experiment -f ./helm/first-experiment/values-qa.yaml
+
+  validate-prod-helm:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Helm
+        uses: azure/setup-helm@v4
+
+      - name: Validate Helm chart with prod values
+        run: helm template first-experiment ./helm/first-experiment -f ./helm/first-experiment/values-prod.yaml
