@@ -1,38 +1,35 @@
-name: Dev CI/CD Pipeline   # Dev pipeline for build, validation, and controlled deployment flow
+name: Dev CI/CD Pipeline   # Dev pipeline for controlled build, push, and deployment flow
 
 on:
   push:
     branches:
-      - main               # Execute on updates merged into the main branch
+      - main               # Run automatically after changes are merged into the main branch
     paths:
-      - 'deployment/versions/dev-version.txt'   # Trigger on development version updates
-      - 'helm/**'          # Trigger on Helm chart changes
-      - '.github/workflows/dev-cicd.yaml'       # Trigger on workflow updates
-      - 'Dockerfile'       # Trigger on container build definition changes
-  workflow_dispatch:       # Allow controlled manual execution when required
+      - 'deployment/versions/dev-version.txt'   # Trigger when the development version file changes
+      - 'helm/**'          # Trigger when Helm chart files are updated
+      - 'Dockerfile'       # Trigger when the container build definition changes
+      - '.github/workflows/dev-cicd.yaml'       # Trigger when this workflow file is updated
+  workflow_dispatch:       # Allow controlled manual execution from GitHub Actions
 
 jobs:
-  ci-build-test-package:
+  ci-dev:
     runs-on: ubuntu-latest   # Standard GitHub-hosted runner for CI execution
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4   # Pull the latest repository state for pipeline execution
+        uses: actions/checkout@v4   # Pull the latest repository code for pipeline execution
 
-      - name: Display development version
-        run: cat deployment/versions/dev-version.txt   # Read the active development release version
-
-      - name: Export image version
+      - name: Read development version
         run: echo "IMAGE_TAG=$(cat deployment/versions/dev-version.txt)" >> $GITHUB_ENV
-        # Make the release version available to downstream build and packaging steps
+        # Load the active development version for image tagging and downstream steps
 
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
-        # Prepare the runtime for application build and validation steps
+        # Prepare the runtime required for application build and validation activities
 
-      - name: Dependency preparation placeholder
+      - name: Dependency installation placeholder
         run: echo "Install application dependencies here"
         # Reserved for dependency installation as part of the CI stage
 
@@ -42,55 +39,56 @@ jobs:
 
       - name: Test execution placeholder
         run: echo "Run application test step here"
-        # Reserved for functional or unit test execution
+        # Reserved for unit, integration, or functional test execution
 
       - name: Set up Helm
         uses: azure/setup-helm@v4
-        # Prepare Helm for chart validation and deployment packaging
+        # Prepare Helm for chart validation before deployment packaging
 
       - name: Validate Helm chart with dev values
         run: helm template first-experiment ./helm/first-experiment -f ./helm/first-experiment/values-dev.yaml
-        # Validate Helm rendering for the development environment configuration
+        # Validate Helm rendering against the development environment configuration
 
-      - name: Docker image build placeholder
-        run: echo "docker build -t first-experiment-model:${IMAGE_TAG} ."
-        # Reserved for container image build using the current development version
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.REGISTRY_USERNAME }}
+          password: ${{ secrets.REGISTRY_TOKEN }}
+        # Authenticate to Docker Hub using repository secrets
 
-      - name: Registry authentication placeholder
-        run: echo "Authenticate to container registry using GitHub Secrets"
-        # Reserved for secure container registry authentication
+      - name: Build Docker image
+        run: docker build -t ${{ secrets.REGISTRY_USERNAME }}/first-experiment-model:${IMAGE_TAG} .
+        # Build the application image using the development version as the image tag
 
-      - name: Docker image push placeholder
-        run: echo "docker push <registry>/first-experiment-model:${IMAGE_TAG}"
-        # Reserved for publishing the versioned image to the target registry
+      - name: Push Docker image
+        run: docker push ${{ secrets.REGISTRY_USERNAME }}/first-experiment-model:${IMAGE_TAG}
+        # Push the versioned image to the target Docker Hub repository
 
-  cd-deploy-dev:
+  cd-dev:
     runs-on: ubuntu-latest   # Runner for the deployment stage
-    needs: ci-build-test-package   # Continue only after CI validation completes successfully
+    needs: ci-dev            # Continue only after the CI stage completes successfully
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4   # Pull the latest repository state for deployment steps
+        uses: actions/checkout@v4
+        # Pull the latest repository code for deployment execution
 
-      - name: Display deployment version
+      - name: Show deployment version
         run: cat deployment/versions/dev-version.txt
         # Confirm the version selected for development deployment
 
       - name: Cluster authentication placeholder
-        run: echo "Authenticate to the Kubernetes cluster using GitHub Secrets"
-        # Reserved for secure cluster authentication before deployment
+        run: echo "Add cluster authentication here"
+        # Replace with actual Kubernetes cluster authentication using repository secrets
 
-      - name: Dev Helm deployment placeholder
+      - name: Helm deployment placeholder
         run: echo "helm upgrade --install first-experiment ./helm/first-experiment -f ./helm/first-experiment/values-dev.yaml"
-        # Reserved for Helm-based deployment into the development environment
+        # Replace with the actual Helm deployment command for the development environment
 
       - name: Rollout verification placeholder
-        run: |
-          echo "kubectl rollout status deployment/first-experiment"
-          echo "kubectl get pods"
-          echo "kubectl get svc"
-        # Reserved for post-deployment rollout and service verification
+        run: echo "kubectl rollout status deployment/first-experiment"
+        # Replace with actual rollout verification after deployment
 
       - name: Smoke test placeholder
         run: echo "Run endpoint validation or smoke test here"
-        # Reserved for post-deployment validation of application availability
+        # Replace with an actual post-deployment validation step
