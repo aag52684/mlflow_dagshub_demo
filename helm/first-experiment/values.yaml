@@ -1,7 +1,7 @@
 replicaCount: 1
 
 image:
-  repository: first-experiment-model
+  repository: aag52684/first-experiment-model
   tag: latest
   pullPolicy: IfNotPresent
 
