@@ -1,40 +1,96 @@
-name: Dev CI/CD Pipeline   # Display name of the workflow
+name: Dev CI/CD Pipeline   # Dev pipeline for build, validation, and controlled deployment flow
 
 on:
   push:
     branches:
-      - main
+      - main               # Execute on updates merged into the main branch
     paths:
-      #- 'deployment/triggers/dev-trigger.txt'
-      - 'deployment/versions/dev-version.txt'
-      - 'helm/**'
-      - '.github/workflows/dev-cicd.yaml'
-  workflow_dispatch:
+      - 'deployment/versions/dev-version.txt'   # Trigger on development version updates
+      - 'helm/**'          # Trigger on Helm chart changes
+      - '.github/workflows/dev-cicd.yaml'       # Trigger on workflow updates
+      - 'Dockerfile'       # Trigger on container build definition changes
+  workflow_dispatch:       # Allow controlled manual execution when required
 
 jobs:
-  validate-dev:
-    runs-on: ubuntu-latest
+  ci-build-test-package:
+    runs-on: ubuntu-latest   # Standard GitHub-hosted runner for CI execution
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v4   # Pull the latest repository state for pipeline execution
+
+      - name: Display development version
+        run: cat deployment/versions/dev-version.txt   # Read the active development release version
+
+      - name: Export image version
+        run: echo "IMAGE_TAG=$(cat deployment/versions/dev-version.txt)" >> $GITHUB_ENV
+        # Make the release version available to downstream build and packaging steps
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+        # Prepare the runtime for application build and validation steps
+
+      - name: Dependency preparation placeholder
+        run: echo "Install application dependencies here"
+        # Reserved for dependency installation as part of the CI stage
+
+      - name: Application build placeholder
+        run: echo "Run application build step here"
+        # Reserved for application build execution
+
+      - name: Test execution placeholder
+        run: echo "Run application test step here"
+        # Reserved for functional or unit test execution
 
       - name: Set up Helm
         uses: azure/setup-helm@v4
+        # Prepare Helm for chart validation and deployment packaging
 
       - name: Validate Helm chart with dev values
         run: helm template first-experiment ./helm/first-experiment -f ./helm/first-experiment/values-dev.yaml
+        # Validate Helm rendering for the development environment configuration
 
-  deploy-dev:
-    runs-on: ubuntu-latest
-    needs: validate-dev
+      - name: Docker image build placeholder
+        run: echo "docker build -t first-experiment-model:${IMAGE_TAG} ."
+        # Reserved for container image build using the current development version
+
+      - name: Registry authentication placeholder
+        run: echo "Authenticate to container registry using GitHub Secrets"
+        # Reserved for secure container registry authentication
+
+      - name: Docker image push placeholder
+        run: echo "docker push <registry>/first-experiment-model:${IMAGE_TAG}"
+        # Reserved for publishing the versioned image to the target registry
+
+  cd-deploy-dev:
+    runs-on: ubuntu-latest   # Runner for the deployment stage
+    needs: ci-build-test-package   # Continue only after CI validation completes successfully
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v4   # Pull the latest repository state for deployment steps
 
-      - name: Show dev version
+      - name: Display deployment version
         run: cat deployment/versions/dev-version.txt
+        # Confirm the version selected for development deployment
 
-      - name: Dev deployment stage placeholder
-        run: echo "Dev deployment will be connected after trigger-based flow is validated"
+      - name: Cluster authentication placeholder
+        run: echo "Authenticate to the Kubernetes cluster using GitHub Secrets"
+        # Reserved for secure cluster authentication before deployment
+
+      - name: Dev Helm deployment placeholder
+        run: echo "helm upgrade --install first-experiment ./helm/first-experiment -f ./helm/first-experiment/values-dev.yaml"
+        # Reserved for Helm-based deployment into the development environment
+
+      - name: Rollout verification placeholder
+        run: |
+          echo "kubectl rollout status deployment/first-experiment"
+          echo "kubectl get pods"
+          echo "kubectl get svc"
+        # Reserved for post-deployment rollout and service verification
+
+      - name: Smoke test placeholder
+        run: echo "Run endpoint validation or smoke test here"
+        # Reserved for post-deployment validation of application availability
