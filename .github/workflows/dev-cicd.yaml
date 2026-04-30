@@ -65,37 +65,27 @@ jobs:
         # Push the versioned image to the target Docker Hub repository
 
   cd-dev:
-    runs-on: ubuntu-latest   # Runner for the deployment stage
-    needs: ci-dev            # Continue only after the CI stage completes successfully
+    runs-on: ubuntu-latest
+    needs: ci-dev
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-        # Pull the latest repository code for deployment execution
 
       - name: Read development version
         run: echo "IMAGE_TAG=$(cat deployment/versions/dev-version.txt)" >> $GITHUB_ENV
-        # Load the same development version for deployment
 
-      - name: Show deployment version
-        run: cat deployment/versions/dev-version.txt
-        # Confirm the version selected for development deployment
-
-      - name: Set up local Kubernetes cluster
-        uses: helm/kind-action@v1
-        # Create a temporary no-cost Kubernetes cluster inside the GitHub Actions runner
-
-      - name: Verify local Kubernetes cluster
+      - name: Set up local Kubernetes with kind
         run: |
-          kubectl cluster-info
-          kubectl get nodes
-        # Confirm that the local Kubernetes cluster is ready for deployment
+          curl -Lo kind https://kind.sigs.k8s.io/dl/v0.23.0/kind-linux-amd64
+          chmod +x kind
+          sudo mv kind /usr/local/bin/kind
+          kind create cluster --name dev-cicd
 
       - name: Set up Helm
         uses: azure/setup-helm@v4
-        # Prepare Helm for Kubernetes deployment
 
-      - name: Helm deployment to local Kubernetes
+      - name: Deploy to local Kubernetes using Helm
         run: |
           helm upgrade --install first-experiment ./helm/first-experiment \
             -f ./helm/first-experiment/values-dev.yaml \
@@ -103,15 +93,13 @@ jobs:
             --set image.tag=${IMAGE_TAG} \
             --namespace dev \
             --create-namespace
-        # Deploy the Docker Hub image to local Kubernetes using Helm
 
-      - name: Rollout verification
-        run: kubectl rollout status deployment/first-experiment -n dev --timeout=180s
-        # Verify that the deployment rollout is completed successfully
-
-      - name: Smoke test placeholder
+      - name: Verify deployment
         run: |
+          kubectl rollout status deployment/first-experiment -n dev --timeout=180s
           kubectl get pods -n dev
           kubectl get svc -n dev
-          echo "Endpoint smoke test will be added after service/ingress exposure is finalized"
-        # Validate deployed Kubernetes resources after Helm deployment
+
+      - name: Cleanup local Kubernetes
+        if: always()
+        run: kind delete cluster --name dev-cicd
