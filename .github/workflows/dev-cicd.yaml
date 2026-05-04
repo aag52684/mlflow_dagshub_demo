@@ -103,3 +103,10 @@ jobs:
       - name: Cleanup local Kubernetes
         if: always()
         run: kind delete cluster --name dev-cicd
+
+      - name: Debug deployment if failed
+        if: failure()
+        run: |
+          kubectl get all -n dev
+          kubectl describe pods -n dev
+          kubectl logs -l app=first-experiment -n dev --tail=100
